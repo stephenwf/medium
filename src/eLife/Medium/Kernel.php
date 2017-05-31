@@ -166,8 +166,16 @@ final class Kernel
             // Map array of articles from database to response.
             $data = $app['medium.versions']->resolve($accept, $articles);
             $json = $app['serializer']->serialize($data, 'json');
-
-            return new Response($json, 200, $data->getHeaders());
+            $headers = $data->getHeaders();
+            if (self::isAuth($request)){
+                $headers['Cache-Control'] = 'private, max-age=0, must-revalidate';
+            }else{
+                $headers['Cache-Control'] = 'public, max-age=300, stale-while-revalidate=300, stale-if-error=86400';
+            }
+            $headers['ETag'] = md5($json);
+            $headers['Vary'] = 'Accept';
+            
+            return new Response($json, 200, $headers);
         });
 
         $app->get('/ping', function () {
@@ -221,6 +229,15 @@ final class Kernel
             'application/json' :
             (string) MediaType::fromString($request->headers->get('Accept'))
         ;
+    }
+
+    public static function isAuth(Request $request) : bool
+    {
+        if ($request->headers->get('X-Consumer-Groups') == 'admin'){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     public static function import(Application $app, string $mediumUsername)
