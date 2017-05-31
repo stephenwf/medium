@@ -180,7 +180,7 @@ final class Kernel
                 $headers = $data->getHeaders();
                 if (self::isAuth($request)) {
                     $headers['Cache-Control'] = 'private, max-age=0, must-revalidate';
-                }else{
+                } else {
                     $headers['Cache-Control'] = 'public, max-age=300, stale-while-revalidate=300, stale-if-error=86400';
                 }
                 $headers['ETag'] = md5($json);
@@ -252,7 +252,7 @@ final class Kernel
     {
         if ($request->headers->get('X-Consumer-Groups') == 'admin') {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
